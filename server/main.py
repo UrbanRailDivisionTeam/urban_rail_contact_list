@@ -112,5 +112,4 @@ app = Litestar(
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run("main:app", host="", port=12379)
