@@ -22,8 +22,8 @@ import { fetchContacts } from "@/lib/api"
 const columnHelper = createColumnHelper<Contact>()
 
 const columnDefs = [
-    columnHelper.accessor("plate", {
-        header: "板块",
+    columnHelper.accessor("department", {
+        header: "部门",
         cell: (info) => info.getValue(),
         filterFn: "includesString",
     }),
@@ -161,7 +161,7 @@ export default function Page() {
     return (
         <div className="flex min-h-svh flex-col p-6">
             <div className="mb-6 flex items-center justify-between">
-                <h1 className="text-xl font-semibold">城轨制造中心通讯录 -- 电话号码查询</h1>
+                <h1 className="text-xl font-semibold">城轨制造中心电话号码查询</h1>
                 <Button variant="ghost" size="icon-sm" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
                     {resolvedTheme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
                 </Button>

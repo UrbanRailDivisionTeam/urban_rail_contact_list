@@ -36,7 +36,7 @@ def _fetch_contacts() -> list[dict[str, str]]:
             e."手机号"                                                  AS phone,
             COALESCE(p."职位名称", '')                                  AS position,
             org."组织名称"                                              AS group_name,
-            COALESCE(sec."板块", parent_org."组织名称", org."组织名称")  AS plate
+            COALESCE(parent_org."组织名称", '')                        AS department
         FROM dwd.person_employee e
         LEFT JOIN dwd.person_position p
             ON e."所属职位ID" = p.zid
@@ -46,9 +46,7 @@ def _fetch_contacts() -> list[dict[str, str]]:
         LEFT JOIN dwd.person_organization parent_org
             ON org."上级组织ID" = parent_org.zid
             AND parent_org."组织状态" = '启用'
-        LEFT JOIN topic.department_section_correspondence sec
-            ON org."组织名称" = sec."部门名称"
-            AND sec."板块" != ''
+
         WHERE e."手机号" != ''
             AND org.zid IS NOT NULL
             AND (
@@ -62,7 +60,7 @@ def _fetch_contacts() -> list[dict[str, str]]:
     for row in rows.named_results():
         contacts.append({
             "id": str(row["zid"]),
-            "plate": row["plate"] or "",
+            "department": row["department"] or "",
             "group": row["group_name"] or "",
             "position": row["position"] or "",
             "name": row["name"] or "",

@@ -1,6 +1,6 @@
 export interface Contact {
     id: string
-    plate: string
+    department: string
     group: string
     position: string
     name: string
@@ -132,16 +132,16 @@ const positions = [
     "调度员",
 ]
 
-const plateGroups: Record<string, string[]> = {
-    通信板块: ["传输组", "无线组", "交换组", "数据组", "网管组", "动力组"],
-    信号板块: ["联锁组", "ATP组", "ATO组", "ATS组", "DCS组", "维护组"],
-    综合板块: ["综合组", "行政组", "人事组", "财务组"],
-    供电板块: ["变电组", "接触网组", "电力监控组", "电缆组"],
-    车辆板块: ["检修组", "调试组", "轮轴组", "电气组", "机械组"],
-    安质板块: ["安全组", "质量组", "环保组", "培训组"],
+const departmentGroups: Record<string, string[]> = {
+    通信部门: ["传输组", "无线组", "交换组", "数据组", "网管组", "动力组"],
+    信号部门: ["联锁组", "ATP组", "ATO组", "ATS组", "DCS组", "维护组"],
+    综合部门: ["综合组", "行政组", "人事组", "财务组"],
+    供电部门: ["变电组", "接触网组", "电力监控组", "电缆组"],
+    车辆部门: ["检修组", "调试组", "轮轴组", "电气组", "机械组"],
+    安质部门: ["安全组", "质量组", "环保组", "培训组"],
 }
 
-const plates = Object.keys(plateGroups)
+const departments = Object.keys(departmentGroups)
 
 function randomItem<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)]
@@ -154,8 +154,8 @@ function generatePhone(index: number): string {
     return prefix + "0" + suffix
 }
 
-function generateEmployeeId(plateIndex: number, index: number): string {
-    const prefix = String.fromCharCode(65 + plateIndex) // A, B, C...
+function generateEmployeeId(deptIndex: number, index: number): string {
+    const prefix = String.fromCharCode(65 + deptIndex) // A, B, C...
     const num = String(10000 + index).slice(-5)
     return prefix + num
 }
@@ -164,20 +164,20 @@ function generateAllContacts(count: number): Contact[] {
     const result: Contact[] = []
 
     for (let i = 0; i < count; i++) {
-        const plate = plates[i % plates.length]
-        const groups = plateGroups[plate]
-        const group = groups[Math.floor((i / plates.length) % groups.length)]
+        const department = departments[i % departments.length]
+        const groups = departmentGroups[department]
+        const group = groups[Math.floor((i / departments.length) % groups.length)]
         const surname = surnames[i % surnames.length]
         const given = givenNames[Math.floor(i / surnames.length) % givenNames.length]
         const name = surname + given
         const position = positions[i % positions.length]
-        const plateIndex = plates.indexOf(plate)
-        const employeeId = generateEmployeeId(plateIndex, i)
+        const deptIndex = departments.indexOf(department)
+        const employeeId = generateEmployeeId(deptIndex, i)
         const phone = generatePhone(i)
 
         result.push({
             id: String(i + 1),
-            plate,
+            department,
             group,
             position,
             name,
