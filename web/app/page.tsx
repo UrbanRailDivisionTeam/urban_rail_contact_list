@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTheme } from "next-themes"
 import {
     useReactTable,
     getCoreRowModel,
@@ -11,7 +12,7 @@ import {
     type FilterFn,
     type Column,
 } from "@tanstack/react-table"
-import { Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Loader2 } from "lucide-react"
+import { Search, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown, Loader2, Sun, Moon } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -106,6 +107,7 @@ function PaginationBar({ table, totalFiltered }: { table: ReturnType<typeof useR
 }
 
 export default function Page() {
+    const { resolvedTheme, setTheme } = useTheme()
     const [data, setData] = useState<Contact[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -158,7 +160,22 @@ export default function Page() {
 
     return (
         <div className="flex min-h-svh flex-col p-6">
-            <h1 className="mb-6 text-xl font-semibold">城轨通讯录</h1>
+            <div className="mb-6 flex items-center justify-between">
+                <h1 className="text-xl font-semibold">城轨制造中心通讯录 -- 电话号码查询</h1>
+                <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() =>
+                        setTheme(resolvedTheme === "dark" ? "light" : "dark")
+                    }
+                >
+                    {resolvedTheme === "dark" ? (
+                        <Sun className="size-4" />
+                    ) : (
+                        <Moon className="size-4" />
+                    )}
+                </Button>
+            </div>
 
             {error ? (
                 <div className="mb-4 rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
