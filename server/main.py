@@ -38,12 +38,19 @@ def get_contacts() -> list[dict[str, str]]:
                 ON e."所属职位ID" = p.zid
             LEFT JOIN dwd.person_organization org
                 ON e."所属组织ID" = org.zid
+                AND org."组织状态" = '启用'
             LEFT JOIN dwd.person_organization parent_org
                 ON org."上级组织ID" = parent_org.zid
+                AND parent_org."组织状态" = '启用'
             LEFT JOIN topic.department_section_correspondence sec
                 ON org."组织名称" = sec."部门名称"
                 AND sec."板块" != ''
             WHERE e."手机号" != ''
+                AND org.zid IS NOT NULL
+                AND (
+                    org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨事业部%'
+                    OR org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨制造中心%'
+                )
             ORDER BY e.zid
         """)
 
