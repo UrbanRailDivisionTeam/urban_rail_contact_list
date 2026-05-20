@@ -30,13 +30,13 @@ def _fetch_contacts() -> list[dict[str, str]]:
 
     rows = client.query("""
         SELECT
-            e.zid                                                       AS zid,
-            e."工号"                                                    AS employee_id,
-            e."姓名"                                                    AS name,
-            e."手机号"                                                  AS phone,
-            COALESCE(p."职位名称", '')                                  AS position,
-            org."组织名称"                                              AS group_name,
-            COALESCE(parent_org."组织名称", '')                        AS department
+            e.zid AS zid,
+            e."工号" AS employee_id,
+            e."姓名" AS name,
+            e."手机号" AS phone,
+            COALESCE(p."职位名称", '') AS position,
+            org."组织名称" AS group_name,
+            COALESCE(parent_org."组织名称", '') AS department
         FROM dwd.person_employee e
         LEFT JOIN dwd.person_position p
             ON e."所属职位ID" = p.zid
@@ -46,13 +46,8 @@ def _fetch_contacts() -> list[dict[str, str]]:
         LEFT JOIN dwd.person_organization parent_org
             ON org."上级组织ID" = parent_org.zid
             AND parent_org."组织状态" = '启用'
-
         WHERE e."手机号" != ''
             AND org.zid IS NOT NULL
-            AND (
-                org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨事业部%'
-                OR org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨制造中心%'
-            )
         ORDER BY e.zid
     """)
 
