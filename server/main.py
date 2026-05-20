@@ -48,6 +48,10 @@ def _fetch_contacts() -> list[dict[str, str]]:
             AND parent_org."组织状态" = '启用'
         WHERE org.zid IS NOT NULL
             AND e."任职状态" = '正式'
+            AND (
+                org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨事业部%'
+                OR org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨制造中心%'
+            )
         ORDER BY e.zid
     """)
 
