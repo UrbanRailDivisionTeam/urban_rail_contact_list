@@ -162,18 +162,8 @@ export default function Page() {
         <div className="flex min-h-svh flex-col p-6">
             <div className="mb-6 flex items-center justify-between">
                 <h1 className="text-xl font-semibold">城轨制造中心通讯录 -- 电话号码查询</h1>
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() =>
-                        setTheme(resolvedTheme === "dark" ? "light" : "dark")
-                    }
-                >
-                    {resolvedTheme === "dark" ? (
-                        <Sun className="size-4" />
-                    ) : (
-                        <Moon className="size-4" />
-                    )}
+                <Button variant="ghost" size="icon-sm" onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+                    {resolvedTheme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
                 </Button>
             </div>
 
@@ -187,13 +177,7 @@ export default function Page() {
                             setLoading(true)
                             fetchContacts()
                                 .then(setData)
-                                .catch((err) =>
-                                    setError(
-                                        err instanceof Error
-                                            ? err.message
-                                            : "加载失败"
-                                    )
-                                )
+                                .catch((err) => setError(err instanceof Error ? err.message : "加载失败"))
                                 .finally(() => setLoading(false))
                         }}
                     >
@@ -211,27 +195,15 @@ export default function Page() {
 
             <div className="relative mb-4 w-full max-w-sm">
                 <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                    placeholder="输入姓名或工号快速查询..."
-                    value={globalFilter}
-                    onChange={(e) =>
-                        table.setGlobalFilter(e.target.value)
-                    }
-                    className="pl-9"
-                />
+                <Input placeholder="输入姓名或工号快速查询..." value={globalFilter} onChange={(e) => table.setGlobalFilter(e.target.value)} className="pl-9" />
             </div>
 
             <div className="mb-2 text-xs text-muted-foreground">
-                {hasAnyFilter
-                    ? `搜索到 ${totalFiltered} 条 / 共 ${totalAll} 条记录`
-                    : `共 ${totalAll} 条记录`}
+                {hasAnyFilter ? `搜索到 ${totalFiltered} 条 / 共 ${totalAll} 条记录` : `共 ${totalAll} 条记录`}
             </div>
 
             <div className="mb-3">
-                <PaginationBar
-                    table={table}
-                    totalFiltered={totalFiltered}
-                />
+                <PaginationBar table={table} totalFiltered={totalFiltered} />
             </div>
 
             <div className="flex-1 overflow-auto rounded-md border">
@@ -240,23 +212,13 @@ export default function Page() {
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead
-                                        key={header.id}
-                                        className="px-4"
-                                    >
+                                    <TableHead key={header.id} className="px-4">
                                         <div
-                                            className="flex cursor-pointer select-none items-center font-semibold hover:text-foreground"
-                                            onClick={() =>
-                                                header.column.toggleSorting()
-                                            }
+                                            className="flex cursor-pointer items-center font-semibold select-none hover:text-foreground"
+                                            onClick={() => header.column.toggleSorting()}
                                         >
-                                            {
-                                                header.column.columnDef
-                                                    .header as string
-                                            }
-                                            <SortIcon
-                                                column={header.column}
-                                            />
+                                            {header.column.columnDef.header as string}
+                                            <SortIcon column={header.column} />
                                         </div>
                                     </TableHead>
                                 ))}
@@ -264,26 +226,15 @@ export default function Page() {
                         ))}
                         <TableRow>
                             {columnDefs.map((col) => {
-                                const columnId =
-                                    col.accessorKey as string
-                                const column =
-                                    table.getColumn(columnId)
-                                const filterValue =
-                                    (column?.getFilterValue() as string) ??
-                                    ""
+                                const columnId = col.accessorKey as string
+                                const column = table.getColumn(columnId)
+                                const filterValue = (column?.getFilterValue() as string) ?? ""
                                 return (
-                                    <TableHead
-                                        key={`filter-${columnId}`}
-                                        className="px-4 py-1"
-                                    >
+                                    <TableHead key={`filter-${columnId}`} className="px-4 py-1">
                                         <Input
                                             placeholder={`筛选${col.header}`}
                                             value={filterValue}
-                                            onChange={(e) =>
-                                                column?.setFilterValue(
-                                                    e.target.value
-                                                )
-                                            }
+                                            onChange={(e) => column?.setFilterValue(e.target.value)}
                                             className="h-7 text-xs"
                                         />
                                     </TableHead>
@@ -294,61 +245,35 @@ export default function Page() {
                     <TableBody>
                         {loading ? (
                             <TableRow>
-                                <TableCell
-                                    colSpan={columnDefs.length}
-                                    className="py-12 text-center text-muted-foreground"
-                                >
+                                <TableCell colSpan={columnDefs.length} className="py-12 text-center text-muted-foreground">
                                     <Loader2 className="mx-auto mb-2 size-5 animate-spin" />
                                     正在加载中...
                                 </TableCell>
                             </TableRow>
                         ) : table.getRowModel().rows.length === 0 ? (
                             <TableRow>
-                                <TableCell
-                                    colSpan={columnDefs.length}
-                                    className="py-12 text-center text-muted-foreground"
-                                >
-                                    {error
-                                        ? "数据加载失败，请重试"
-                                        : "暂无数据"}
+                                <TableCell colSpan={columnDefs.length} className="py-12 text-center text-muted-foreground">
+                                    {error ? "数据加载失败，请重试" : "暂无数据"}
                                 </TableCell>
                             </TableRow>
                         ) : (
                             table.getRowModel().rows.map((row) => (
                                 <TableRow key={row.id}>
-                                    {row
-                                        .getVisibleCells()
-                                        .map((cell) => {
-                                            const rendered =
-                                                cell.column.columnDef
-                                                    .cell
-                                            if (
-                                                typeof rendered ===
-                                                "function"
-                                            ) {
-                                                return (
-                                                    <TableCell
-                                                        key={cell.id}
-                                                        className="px-4"
-                                                    >
-                                                        {rendered(
-                                                            cell.getContext()
-                                                        )}
-                                                    </TableCell>
-                                                )
-                                            }
+                                    {row.getVisibleCells().map((cell) => {
+                                        const rendered = cell.column.columnDef.cell
+                                        if (typeof rendered === "function") {
                                             return (
-                                                <TableCell
-                                                    key={cell.id}
-                                                    className="px-4"
-                                                >
-                                                    {String(
-                                                        cell.getValue() ??
-                                                            ""
-                                                    )}
+                                                <TableCell key={cell.id} className="px-4">
+                                                    {rendered(cell.getContext())}
                                                 </TableCell>
                                             )
-                                        })}
+                                        }
+                                        return (
+                                            <TableCell key={cell.id} className="px-4">
+                                                {String(cell.getValue() ?? "")}
+                                            </TableCell>
+                                        )
+                                    })}
                                 </TableRow>
                             ))
                         )}
@@ -357,19 +282,13 @@ export default function Page() {
             </div>
 
             <div className="mt-4">
-                <PaginationBar
-                    table={table}
-                    totalFiltered={totalFiltered}
-                />
+                <PaginationBar table={table} totalFiltered={totalFiltered} />
             </div>
         </div>
     )
 }
 
-function generatePageNumbers(
-    current: number,
-    total: number
-): (number | null)[] {
+function generatePageNumbers(current: number, total: number): (number | null)[] {
     if (total <= 14) {
         return Array.from({ length: total }, (_, i) => i)
     }
