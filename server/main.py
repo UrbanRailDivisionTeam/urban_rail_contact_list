@@ -47,7 +47,7 @@ def _fetch_contacts() -> list[dict[str, str]]:
             ON org."上级组织ID" = parent_org.zid
             AND parent_org."组织状态" = '启用'
         WHERE org.zid IS NOT NULL
-            AND E."任职状态" = '正式'
+            AND e."任职状态" = '正式'
         ORDER BY e.zid
     """)
 
