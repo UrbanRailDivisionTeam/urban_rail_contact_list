@@ -46,8 +46,8 @@ def _fetch_contacts() -> list[dict[str, str]]:
         LEFT JOIN dwd.person_organization parent_org
             ON org."上级组织ID" = parent_org.zid
             AND parent_org."组织状态" = '启用'
-        WHERE e."手机号" != ''
-            AND org.zid IS NOT NULL
+        WHERE org.zid IS NOT NULL
+            AND E."任职状态" = '正式'
         ORDER BY e.zid
     """)
 
