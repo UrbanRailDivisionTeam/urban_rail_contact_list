@@ -1,8 +1,9 @@
+import time
 import traceback
 
 import clickhouse_connect
 import clickhouse_connect.driver
-from litestar import Litestar, get
+from litestar import Litestar, get, Request
 from litestar.config.cors import CORSConfig
 from litestar.static_files import StaticFilesConfig
 
@@ -19,54 +20,71 @@ def _ch() -> clickhouse_connect.driver.Client:
     )
 
 
+CACHE_TTL = 5  # seconds
+
+_cache: dict = {"data": None, "ts": 0.0}
+
+
+def _fetch_contacts() -> list[dict[str, str]]:
+    client = _ch()
+
+    rows = client.query("""
+        SELECT
+            e.zid                                                       AS zid,
+            e."工号"                                                    AS employee_id,
+            e."姓名"                                                    AS name,
+            e."手机号"                                                  AS phone,
+            COALESCE(p."职位名称", '')                                  AS position,
+            org."组织名称"                                              AS group_name,
+            COALESCE(sec."板块", parent_org."组织名称", org."组织名称")  AS plate
+        FROM dwd.person_employee e
+        LEFT JOIN dwd.person_position p
+            ON e."所属职位ID" = p.zid
+        LEFT JOIN dwd.person_organization org
+            ON e."所属组织ID" = org.zid
+            AND org."组织状态" = '启用'
+        LEFT JOIN dwd.person_organization parent_org
+            ON org."上级组织ID" = parent_org.zid
+            AND parent_org."组织状态" = '启用'
+        LEFT JOIN topic.department_section_correspondence sec
+            ON org."组织名称" = sec."部门名称"
+            AND sec."板块" != ''
+        WHERE e."手机号" != ''
+            AND org.zid IS NOT NULL
+            AND (
+                org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨事业部%'
+                OR org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨制造中心%'
+            )
+        ORDER BY e.zid
+    """)
+
+    contacts: list[dict[str, str]] = []
+    for row in rows.named_results():
+        contacts.append({
+            "id": str(row["zid"]),
+            "plate": row["plate"] or "",
+            "group": row["group_name"] or "",
+            "position": row["position"] or "",
+            "name": row["name"] or "",
+            "employeeId": row["employee_id"] or "",
+            "phone": row["phone"] or "",
+        })
+
+    return contacts
+
+
 @get("/api/contacts", sync_to_thread=False)
-def get_contacts() -> list[dict[str, str]]:
+def get_contacts(request: Request) -> list[dict[str, str]]:
     try:
-        client = _ch()
+        force = request.query_params.get("refresh") == "1"
 
-        rows = client.query("""
-            SELECT
-                e.zid                                                       AS zid,
-                e."工号"                                                    AS employee_id,
-                e."姓名"                                                    AS name,
-                e."手机号"                                                  AS phone,
-                COALESCE(p."职位名称", '')                                  AS position,
-                org."组织名称"                                              AS group_name,
-                COALESCE(sec."板块", parent_org."组织名称", org."组织名称")  AS plate
-            FROM dwd.person_employee e
-            LEFT JOIN dwd.person_position p
-                ON e."所属职位ID" = p.zid
-            LEFT JOIN dwd.person_organization org
-                ON e."所属组织ID" = org.zid
-                AND org."组织状态" = '启用'
-            LEFT JOIN dwd.person_organization parent_org
-                ON org."上级组织ID" = parent_org.zid
-                AND parent_org."组织状态" = '启用'
-            LEFT JOIN topic.department_section_correspondence sec
-                ON org."组织名称" = sec."部门名称"
-                AND sec."板块" != ''
-            WHERE e."手机号" != ''
-                AND org.zid IS NOT NULL
-                AND (
-                    org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨事业部%'
-                    OR org."所属组织路径" LIKE '%中国中车_中车株洲电力机车有限公司_城轨制造中心%'
-                )
-            ORDER BY e.zid
-        """)
+        if not force and _cache["data"] is not None and time.time() - _cache["ts"] < CACHE_TTL:
+            return _cache["data"]
 
-        contacts: list[dict[str, str]] = []
-        for row in rows.named_results():
-            contacts.append({
-                "id": str(row["zid"]),
-                "plate": row["plate"] or "",
-                "group": row["group_name"] or "",
-                "position": row["position"] or "",
-                "name": row["name"] or "",
-                "employeeId": row["employee_id"] or "",
-                "phone": row["phone"] or "",
-            })
-
-        return contacts
+        data = _fetch_contacts()
+        _cache["data"] = data
+        _cache["ts"] = time.time()
+        return data
     except Exception:
         traceback.print_exc()
         return []
